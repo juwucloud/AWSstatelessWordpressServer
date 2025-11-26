@@ -1,10 +1,10 @@
 ########################################
-# Auto Scaling Policies for WordPress ASG
-# Target Tracking based on CPU Utilization
+# Auto Scaling Target Tracking for WordPress ASG
+# One policy handles both scale-in and scale-out
 ########################################
 
-resource "aws_autoscaling_policy" "jw_scale_out" {
-  name                   = "jw-scale-out"
+resource "aws_autoscaling_policy" "jw_target_tracking" {
+  name                   = "jw-cpu-target"
   autoscaling_group_name = aws_autoscaling_group.jwasg.name
   policy_type            = "TargetTrackingScaling"
 
@@ -13,38 +13,11 @@ resource "aws_autoscaling_policy" "jw_scale_out" {
       predefined_metric_type = "ASGAverageCPUUtilization"
     }
 
-    # Target CPU for scaling decisions
-    target_value = 60
+    # CPU Target (50%)
+    target_value = 50
   }
 
-  # Time to wait after scale-out before evaluating again
-  # Warmup allows new instances to fully boot WordPress
-  estimated_instance_warmup = 180
-
-  depends_on = [
-    aws_autoscaling_group.jwasg
-  ]
-}
-
-########################################
-# Scale-In policy (same metric, same target)
-########################################
-
-resource "aws_autoscaling_policy" "jw_scale_in" {
-  name                   = "jw-scale-in"
-  autoscaling_group_name = aws_autoscaling_group.jwasg.name
-  policy_type            = "TargetTrackingScaling"
-
-  target_tracking_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ASGAverageCPUUtilization"
-    }
-
-    # Same target ensures symmetrical behavior
-    target_value = 60
-  }
-
-  # Warmup also applies to scale-in evaluation
+  # Warmup time so new instances can fully start WordPress
   estimated_instance_warmup = 180
 
   depends_on = [
