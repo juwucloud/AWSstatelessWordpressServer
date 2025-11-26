@@ -94,14 +94,6 @@ resource "aws_security_group" "jwsg_web" {
     security_groups = [aws_security_group.jwsg_bastion.id]
   }
 
-  # NFS from EFS
-  ingress {
-    from_port       = 2049
-    to_port         = 2049
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jwsg_efs.id]
-  }
-
   # Egress (allow all)
   egress {
     from_port   = 0
