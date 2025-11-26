@@ -24,11 +24,6 @@ variable "db_secret_name" {
   description = "Name of the Secrets Manager secret for DB credentials"
 }
 
-variable "ami_id" {
-  type        = string
-  description = "AMI ID for the EC2 instances"
-}
-
 variable "key_name" {
   type        = string
   description = "Key pair name for SSH access"

@@ -3,9 +3,14 @@
 ########################################
 
 resource "aws_launch_template" "jwlt" {
+  depends_on = [ 
+    aws_efs_file_system.jwefs,
+    aws_secretsmanager_secret_version.db_creds_update 
+  ]
+
   name_prefix   = "jwlt-"
   key_name      = var.key_name
-  image_id      = var.ami_id
+  image_id      = data.aws_ami.amazon_linux_2023.id
   instance_type = "t2.micro"
 
   iam_instance_profile {
@@ -37,6 +42,7 @@ resource "aws_launch_template" "jwlt" {
 ########################################
 
 resource "aws_autoscaling_group" "jwasg" {
+
   name             = "jwasg"
   desired_capacity = 2
   max_size         = 3
