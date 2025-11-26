@@ -21,7 +21,7 @@ APACHE_GID=48
 # Install packages
 ########################################
 dnf update -y
-dnf install -y httpd php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd unzip wget python3 amazon-efs-utils
+dnf install -y httpd mariadb1011-server-utils php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd unzip wget python3 amazon-efs-utils
 
 systemctl enable httpd
 systemctl enable php-fpm
