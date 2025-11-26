@@ -17,7 +17,7 @@ variable "db_password" {
 variable "db_name" {
   type        = string
   description = "Initial database name for WordPress"
-  default     = "wordpress"
+  default     = "wordpressdb"
 }
 
 variable "key_name" {
