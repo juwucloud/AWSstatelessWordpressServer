@@ -23,7 +23,7 @@ resource "aws_launch_template" "jwlt" {
   }
 
   # Load User Data from file (base64 required by AWS)
-  user_data = filebase64("${path.module}/userdata.sh")
+  user_data = filebase64("${path.module}/LaunchTemplateUserData.sh")
 
   tag_specifications {
     resource_type = "instance"
