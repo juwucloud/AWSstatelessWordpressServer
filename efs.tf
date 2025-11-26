@@ -30,9 +30,6 @@ resource "aws_efs_mount_target" "jwefs_mt_1" {
   # Only inbound NFS from Webserver SG
   security_groups = [aws_security_group.jwsg_efs.id]
 
-  tags = {
-    Name = "jwefs-mt-1"
-  }
 }
 
 ########################################
