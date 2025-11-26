@@ -1,0 +1,172 @@
+########################################
+# Bastion Host SG (optional SSH)
+########################################
+
+resource "aws_security_group" "jwsg_bastion" {
+  name        = "jwsg-bastion"
+  description = "SSH access to Bastion Host"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  ingress {
+    description = "Allow SSH from anywhere (adjust if needed)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "jwsg-bastion"
+  }
+}
+
+########################################
+# ALB Security Group
+########################################
+
+resource "aws_security_group" "jwsg_alb" {
+  name        = "jwsg-alb"
+  description = "Allow HTTP/HTTPS from the internet"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # HTTPS optional
+  # ingress {
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "jwsg-alb"
+  }
+}
+
+
+
+########################################
+# Webserver SG (for EC2 ASG)
+########################################
+
+resource "aws_security_group" "jwsg_web" {
+  name        = "jwsg-web"
+  description = "Allow HTTP from ALB, NFS from EFS, and SSH for testing"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  # HTTP from ALB
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.jwsg_alb.id]
+  }
+
+  # SSH for testing only
+  # Only allow for testing environment!
+  # In production remove this completely.
+  ingress {
+    description = "SSH access for testing environment"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    # Bastion-Host allowed
+    security_groups = [aws_security_group.jwsg_bastion.id]
+  }
+
+  # NFS from EFS
+  ingress {
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.jwsg_efs.id]
+  }
+
+  # Egress (allow all)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "jwsg-web"
+  }
+}
+
+########################################
+# RDS Security Group
+########################################
+
+resource "aws_security_group" "jwsg_rds" {
+  name        = "jwsg-rds"
+  description = "Allow MySQL from Webserver SG"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.jwsg_web.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "jwsg-rds"
+  }
+}
+
+########################################
+# EFS Security Group
+########################################
+
+resource "aws_security_group" "jwsg_efs" {
+  name        = "jwsg-efs"
+  description = "Allow NFS access from Webserver SG"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  ingress {
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.jwsg_web.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "jwsg-efs"
+  }
+}
