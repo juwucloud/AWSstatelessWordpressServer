@@ -59,17 +59,3 @@ db_name  = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_str
     Name = "jwrds"
   }
 }
-
-#########################################
-# Update Secrets Manager with RDS Endpoint
-#########################################
-resource "aws_secretsmanager_secret_version" "db_creds_update" {
-  secret_id     = aws_secretsmanager_secret.db_secret.id
-
-  secret_string = jsonencode({
-    db_name     = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_name"]
-    db_user     = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_user"]
-    db_password = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_password"]
-    db_host     = aws_db_instance.jwrds.address
-  })
-}
