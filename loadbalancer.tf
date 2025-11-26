@@ -5,7 +5,7 @@
 resource "aws_lb" "jwalb" {
   name               = "jwalb"
   load_balancer_type = "application"
-  internal           = false. # internet-facing
+  internal           = false # internet-facing
 
   # ALB lives in the public subnets
   subnets = [
