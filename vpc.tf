@@ -83,7 +83,8 @@ resource "aws_subnet" "jwprivate_2" {
 ########################################
 
 resource "aws_eip" "jwnat_eip" {
-  vpc = true
+  depends_on = [ aws_internet_gateway.jwigw ]
+  domain = "vpc"
 
   tags = {
     Name = "jwnat-eip"
