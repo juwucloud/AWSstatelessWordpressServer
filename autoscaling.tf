@@ -4,18 +4,12 @@
 
 resource "aws_launch_template" "jwlt" {
   name_prefix   = "jwlt-"
+  key_name      = var.key_name
   image_id      = var.ami_id
-  instance_type = "t3.micro"
+  instance_type = "t2.micro"
 
   iam_instance_profile {
     name = aws_iam_instance_profile.jw_instance_profile.name
-  }
-
-  # Enforce IMDSv2
-  metadata_options {
-    http_endpoint               = "enabled"
-    http_tokens                 = "required"
-    http_put_response_hop_limit = 2
   }
 
   network_interfaces {
