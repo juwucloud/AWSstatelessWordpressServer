@@ -31,9 +31,10 @@ resource "aws_db_instance" "jwrds" {
   multi_az                = false
 
   # Database credentials (from variables)
-  username                = var.db_username
-  password                = var.db_password
-  db_name                 = var.db_name
+username = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_user"]
+password = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_password"]
+db_name  = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_name"]
+
 
   # Security groups
   vpc_security_group_ids  = [aws_security_group.jwsg_rds.id]
@@ -57,4 +58,18 @@ resource "aws_db_instance" "jwrds" {
   tags = {
     Name = "jwrds"
   }
+}
+
+#########################################
+# Update Secrets Manager with RDS Endpoint
+#########################################
+resource "aws_secretsmanager_secret_version" "db_creds_update" {
+  secret_id     = aws_secretsmanager_secret.db_secret.id
+
+  secret_string = jsonencode({
+    db_name     = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_name"]
+    db_user     = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_user"]
+    db_password = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_password"]
+    db_host     = aws_db_instance.jwrds.address
+  })
 }
