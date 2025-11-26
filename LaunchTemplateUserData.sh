@@ -7,9 +7,9 @@ exec > /var/log/user-data.log 2>&1
 ########################################
 # Variables
 ########################################
-REGION="us-west-2"
-EFS_ID="fs-00765686e44004559"
-EFS_AP_ID="fsap-0eaaf8b4fb49613cb"
+REGION="us-west-2"                  # REPLACE with your AWS Region, e.g. eu-central-1
+EFS_ID="${efs_id}"                   # REPLACE with your EFS File System ID
+EFS_AP_ID="${efs_ap_id}"              # REPLACE with your EFS Access Point ID
 SECRET_NAME="wpsecrets"
 
 APACHE_USER="apache"
@@ -21,7 +21,10 @@ APACHE_GID=48
 # Install packages
 ########################################
 dnf update -y
-dnf install -y httpd mariadb1011-server-utils php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd unzip wget python3 amazon-efs-utils
+# Web server, PHP, MariaDB client, EFS utils
+dnf install -y httpd mariadb1011-server-utils unzip wget python3 amazon-efs-utils
+# PHP and extensions
+dnf install -y php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd
 
 systemctl enable httpd
 systemctl enable php-fpm
@@ -32,7 +35,7 @@ systemctl stop httpd
 ########################################
 mkdir -p /mnt/efs
 
-mount -t efs -o tls,accesspoint=${EFS_AP_ID} ${EFS_ID}:/ /mnt/efs
+mount -t efs -o tls,accesspoint=$EFS_AP_ID $EFS_ID:/ /mnt/efs
 
 # IMPORTANT:
 # Because your Access Point root directory **is /wp-content**, 
@@ -84,22 +87,22 @@ DB_HOST=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdi
 cd /var/www/html
 cp wp-config-sample.php wp-config.php
 
-sed -i "s/database_name_here/${DB_NAME}/" wp-config.php
-sed -i "s/username_here/${DB_USER}/" wp-config.php
-sed -i "s/password_here/${DB_PASSWORD}/" wp-config.php
-sed -i "s/localhost/${DB_HOST}/" wp-config.php
+sed -i "s/database_name_here/$DB_NAME/" wp-config.php
+sed -i "s/username_here/$DB_USER/" wp-config.php
+sed -i "s/password_here/$DB_PASSWORD/" wp-config.php
+sed -i "s/localhost/$DB_HOST/" wp-config.php
 
 ########################################
 # Permissions (local only)
 ########################################
-chown -R ${APACHE_USER}:${APACHE_GROUP} /var/www/html
+chown -R $APACHE_USER:$APACHE_GROUP /var/www/html
 chmod -R 755 /var/www/html
 
 ########################################
 # Health Check
 ########################################
 echo "healthy" > /var/www/html/health
-chown ${APACHE_USER}:${APACHE_GROUP} /var/www/html/health
+chown $APACHE_USER:$APACHE_GROUP /var/www/html/health
 chmod 755 /var/www/html/health
 
 ########################################

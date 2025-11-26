@@ -22,7 +22,10 @@ resource "aws_launch_template" "jwlt" {
   }
 
   # Load User Data from file (base64 required by AWS)
-  user_data = filebase64("${path.module}/LaunchTemplateUserData.sh")
+  user_data    = base64encode(templatefile("${path.module}/LaunchTemplateUserData.sh", {
+    efs_id     = aws_efs_file_system.jwefs.id
+    efs_ap_id  = aws_efs_access_point.jwefs_ap.id
+  }))
 
   tag_specifications {
     resource_type = "instance"
@@ -44,9 +47,9 @@ resource "aws_launch_template" "jwlt" {
 resource "aws_autoscaling_group" "jwasg" {
 
   name             = "jwasg"
-  desired_capacity = 2
-  max_size         = 3
-  min_size         = 1
+  desired_capacity = 1 # 2 for production
+  max_size         = 3 # 4 for production
+  min_size         = 1 # 2 for production
 
   vpc_zone_identifier = [
     aws_subnet.jwprivate_1.id,
