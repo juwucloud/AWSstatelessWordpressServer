@@ -53,13 +53,31 @@ unzip latest.zip
 cp -r wordpress/* /var/www/html/
 
 ########################################
-# Sync WordPress wp-content → EFS ONCE
+# Sync WordPress wp-content → EFS (ASG safe)
 ########################################
-if [ ! -f /mnt/efs/.initialized ]; then
-    # copy WordPress default wp-content structure
-    cp -r /var/www/html/wp-content/* /mnt/efs/
-    touch /mnt/efs/.initialized
-fi
+
+# Ensure required directories exist
+mkdir -p /mnt/efs/plugins
+mkdir -p /mnt/efs/themes
+
+# Copy default themes ONCE per theme (safe because IDs differ)
+for theme in /var/www/html/wp-content/themes/*; do
+    base=$(basename "$theme")
+    if [ ! -d "/mnt/efs/themes/$base" ]; then
+        cp -r "$theme" /mnt/efs/themes/
+    fi
+done
+
+# Copy default plugins ONCE per plugin (also safe)
+for plugin in /var/www/html/wp-content/plugins/*; do
+    base=$(basename "$plugin")
+    if [ ! -d "/mnt/efs/plugins/$base" ]; then
+        cp -r "$plugin" /mnt/efs/plugins/
+    fi
+done
+
+# Always overwrite index.php (harmless and recommended)
+cp /var/www/html/wp-content/index.php /mnt/efs/
 
 ########################################
 # Replace wp-content with EFS mount
@@ -108,6 +126,6 @@ chmod 755 /var/www/html/health
 ########################################
 # Start services
 ########################################
-sleep 20
+sleep 60
 systemctl start php-fpm
 systemctl start httpd
