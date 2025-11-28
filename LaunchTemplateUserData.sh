@@ -8,9 +8,9 @@ exec > /var/log/user-data.log 2>&1
 # Variables
 ########################################
 REGION="us-west-2"                  # REPLACE with your AWS Region, e.g. eu-central-1
-EFS_ID="${efs_id}"                   # REPLACE with your EFS File System ID
-EFS_AP_ID="${efs_ap_id}"              # REPLACE with your EFS Access Point ID
-SECRET_NAME="wpsecrets"
+EFS_ID="${efs_id}"                   
+EFS_AP_ID="${efs_ap_id}"              
+SECRET_NAME="wpsecrets"             # REPLACE with your Secrets Manager secret name
 
 APACHE_USER="apache"
 APACHE_GROUP="apache"
@@ -110,9 +110,16 @@ sed -i "s/username_here/$DB_USER/" wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/" wp-config.php
 sed -i "s/localhost/$DB_HOST/" wp-config.php
 
-# Ensure WordPress uses SSL for DB connections (required by RDS setting)
-# Insert MYSQL_CLIENT_FLAGS after the DB_HOST definition
-sed -i "/^define('DB_HOST'/a define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);" wp-config.php
+########################################
+# Force SSL for WordPress DB
+########################################
+
+# Load MYSQLI_CLIENT_SSL if not present
+echo "<?php if(!defined('MYSQLI_CLIENT_SSL')) define('MYSQLI_CLIENT_SSL', 2048);" \
+  > /var/www/html/force-mysqli-ssl.php
+
+# Insert SSL instruction directly after DB_HOST
+sed -i "/^define('DB_HOST'/a require_once __DIR__.'/force-mysqli-ssl.php'; define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);" wp-config.php
 
 ########################################
 # Permissions (local only)
