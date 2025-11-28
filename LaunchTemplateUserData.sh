@@ -110,6 +110,10 @@ sed -i "s/username_here/$DB_USER/" wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/" wp-config.php
 sed -i "s/localhost/$DB_HOST/" wp-config.php
 
+# Ensure WordPress uses SSL for DB connections (required by RDS setting)
+# Insert MYSQL_CLIENT_FLAGS after the DB_HOST definition
+sed -i "/^define('DB_HOST'/a define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);" wp-config.php
+
 ########################################
 # Permissions (local only)
 ########################################
