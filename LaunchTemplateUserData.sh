@@ -108,5 +108,6 @@ chmod 755 /var/www/html/health
 ########################################
 # Start services
 ########################################
+sleep 20
 systemctl start php-fpm
 systemctl start httpd

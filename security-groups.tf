@@ -36,6 +36,7 @@ resource "aws_security_group" "jwsg_alb" {
   description = "Allow HTTP/HTTPS from the internet"
   vpc_id      = aws_vpc.jwvpc.id
 
+  # Allow HTTP from anywhere
   ingress {
     from_port   = 80
     to_port     = 80
@@ -43,14 +44,7 @@ resource "aws_security_group" "jwsg_alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTPS optional
-  # ingress {
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-
+  # ALB outbound to webservers
   egress {
     from_port   = 0
     to_port     = 0
@@ -62,8 +56,6 @@ resource "aws_security_group" "jwsg_alb" {
     Name = "jwsg-alb"
   }
 }
-
-
 
 ########################################
 # Webserver SG (for EC2 ASG)
@@ -83,18 +75,15 @@ resource "aws_security_group" "jwsg_web" {
   }
 
   # SSH for testing only
-  # Only allow for testing environment!
-  # In production remove this completely.
   ingress {
     description = "SSH access for testing environment"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    # Bastion-Host allowed
     security_groups = [aws_security_group.jwsg_bastion.id]
   }
 
-  # Egress (allow all)
+  # Allow outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -161,4 +150,19 @@ resource "aws_security_group" "jwsg_efs" {
   tags = {
     Name = "jwsg-efs"
   }
+}
+
+########################################
+# FIX FOR ALB ↔ Webserver RETURN TRAFFIC  
+# Must be a separate resource to avoid cycles
+########################################
+
+# Allow EC2 instances to respond to ALB health checks
+resource "aws_security_group_rule" "web_to_alb_return" {
+  type                     = "ingress"
+  from_port                = 1024
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.jwsg_alb.id
+  source_security_group_id = aws_security_group.jwsg_web.id
 }

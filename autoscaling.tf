@@ -5,7 +5,8 @@
 resource "aws_launch_template" "jwlt" {
   depends_on = [ 
     aws_efs_file_system.jwefs,
-    aws_secretsmanager_secret_version.db_creds_update 
+    aws_secretsmanager_secret_version.db_creds_update,
+    aws_db_instance.jwrds
   ]
 
   name_prefix   = "jwlt-"
@@ -52,8 +53,8 @@ resource "aws_autoscaling_group" "jwasg" {
   min_size         = 1 # 2 for production
 
   vpc_zone_identifier = [
-    aws_subnet.jwprivate_1.id #, 
-    #aws_subnet.jwprivate_2.id # Uncomment for production
+    aws_subnet.jwprivate_1.id, 
+    aws_subnet.jwprivate_2.id 
   ]
 
   target_group_arns = [
