@@ -114,12 +114,7 @@ sed -i "s/localhost/$DB_HOST/" wp-config.php
 # Force SSL for WordPress DB
 ########################################
 
-# Load MYSQLI_CLIENT_SSL if not present
-echo "<?php if(!defined('MYSQLI_CLIENT_SSL')) define('MYSQLI_CLIENT_SSL', 2048);" \
-  > /var/www/html/force-mysqli-ssl.php
-
-# Insert SSL instruction directly after DB_HOST
-sed -i "/^define('DB_HOST'/a require_once __DIR__.'/force-mysqli-ssl.php'; define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);" wp-config.php
+sed -i "/define( 'DB_HOST',/a define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" /var/www/html/wp-config.php
 
 ########################################
 # Permissions (local only)

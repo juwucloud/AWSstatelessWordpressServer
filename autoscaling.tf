@@ -53,8 +53,7 @@ resource "aws_autoscaling_group" "jwasg" {
   min_size         = 1 # 2 for production
 
   vpc_zone_identifier = [
-    aws_subnet.jwprivate_1.id, 
-    aws_subnet.jwprivate_2.id 
+    aws_subnet.jwprivate_1.id # only a single subnet is used for testing
   ]
 
   target_group_arns = [
