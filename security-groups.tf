@@ -58,6 +58,21 @@ resource "aws_security_group" "jwsg_alb" {
 }
 
 ########################################
+# FIX FOR ALB ↔ Webserver RETURN TRAFFIC  
+# Must be a separate resource to avoid cycles
+########################################
+
+# Allow EC2 instances to respond to ALB health checks
+resource "aws_security_group_rule" "web_to_alb_return" {
+  type                     = "ingress"
+  from_port                = 1024
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.jwsg_alb.id
+  source_security_group_id = aws_security_group.jwsg_web.id
+}
+
+########################################
 # Webserver SG (for EC2 ASG)
 ########################################
 
@@ -152,17 +167,4 @@ resource "aws_security_group" "jwsg_efs" {
   }
 }
 
-########################################
-# FIX FOR ALB ↔ Webserver RETURN TRAFFIC  
-# Must be a separate resource to avoid cycles
-########################################
 
-# Allow EC2 instances to respond to ALB health checks
-resource "aws_security_group_rule" "web_to_alb_return" {
-  type                     = "ingress"
-  from_port                = 1024
-  to_port                  = 65535
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.jwsg_alb.id
-  source_security_group_id = aws_security_group.jwsg_web.id
-}
