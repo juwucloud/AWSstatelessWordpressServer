@@ -1,4 +1,4 @@
-# AWSstatelessWordpressServer – Stateless WordPress on AWS with Terraform
+# Stateless WordPress on AWS with Terraform
 
 This repository contains my AWS stateless WordPress capstone project from the AWS Cloud Engineer bootcamp at neue fische.  
 It deploys a multi-AZ, stateless WordPress stack on AWS using Terraform.
