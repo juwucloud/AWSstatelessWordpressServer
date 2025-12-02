@@ -47,6 +47,16 @@ resource "aws_iam_policy" "jw_ec2_policy" {
         ]
         Resource = "*"
       }
+      {
+        Sid    = "S3Access"
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject"
+        ]
+        Resource = "*"
+      }
     ]
   })
 
