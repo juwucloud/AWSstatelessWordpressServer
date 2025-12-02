@@ -12,7 +12,7 @@ resource "aws_launch_template" "jwlt" {
   name_prefix   = "jwlt-"
   key_name      = var.key_name
   image_id      = data.aws_ami.amazon_linux_2023.id
-  instance_type = "t2.micro"
+  instance_type = "t3.medium"
 
   iam_instance_profile {
     name = aws_iam_instance_profile.jw_instance_profile.name
@@ -49,7 +49,7 @@ resource "aws_autoscaling_group" "jwasg" {
 
   name             = "jwasg"
   desired_capacity = 1 # 2 for production
-  max_size         = 3 # 4 for production
+  max_size         = 1 # 4 for production
   min_size         = 1 # 2 for production
 
   vpc_zone_identifier = [
