@@ -46,7 +46,7 @@ resource "aws_iam_policy" "jw_ec2_policy" {
           "elasticfilesystem:ClientRootAccess"
         ]
         Resource = "*"
-      }
+      },
       {
         Sid    = "S3Access"
         Effect = "Allow"

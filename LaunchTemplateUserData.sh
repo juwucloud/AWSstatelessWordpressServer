@@ -6,7 +6,7 @@ exec > /var/log/user-data.log 2>&1
 ########################################
 # Variables
 ########################################
-REGION="eu-central-1"
+REGION="us-west-2"
 EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
 SECRET_NAME="wpsecrets"
@@ -59,7 +59,6 @@ DB_USER=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdi
 DB_PASSWORD=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_password'])")
 DB_HOST=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_host'])")
 
-
 ########################################
 # Configure wp-config.php
 ########################################
@@ -73,14 +72,13 @@ sed -i "s/localhost/$DB_HOST/" wp-config.php
 
 sed -i "/define( 'DB_HOST',/a define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" wp-config.php
 
-
 ########################################
-# One-time DB import (optional)
+# One-time DB import
 ########################################
 FLAG="/mnt/efs/.dbimportdone"
 
 if [ ! -f "$FLAG" ]; then
-    aws s3 cp "s3://$S3_BUCKET/local.sql" /tmp/local.sql
+    aws s3 cp "s3://$S3_BUCKET/local.sql" /tmp/local.sql || true
     mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /tmp/local.sql || true
     touch "$FLAG"
 fi
