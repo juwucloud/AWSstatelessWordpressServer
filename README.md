@@ -5,7 +5,7 @@ It deploys a multi-AZ, stateless WordPress stack on AWS using Terraform.
 
 The goal is to separate application state from the web tier, introduce basic high availability and keep everything reproducible via infrastructure as code.
 
----
+---tg
 
 ## Architecture Overview
 
