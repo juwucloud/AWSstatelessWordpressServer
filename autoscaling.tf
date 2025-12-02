@@ -12,7 +12,7 @@ resource "aws_launch_template" "jwlt" {
   name_prefix   = "jwlt-"
   key_name      = var.key_name
   image_id      = data.aws_ami.amazon_linux_2023.id
-  instance_type = "t3.medium"
+  instance_type = "t2.micro"
 
   iam_instance_profile {
     name = aws_iam_instance_profile.jw_instance_profile.name
