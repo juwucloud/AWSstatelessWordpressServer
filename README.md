@@ -47,7 +47,6 @@ AWSstatelessWordpressServer/
 ├── LaunchTemplateUserData.sh       # user data script for the WordPress web instances
 ├── bastionuserdata.sh              # user data script for the bastion host
 ├── AWSstatelessWordpressServer.png # architecture diagram
-└── planfile                        # example Terraform plan (local artefact, optional)
 ```
 
 
