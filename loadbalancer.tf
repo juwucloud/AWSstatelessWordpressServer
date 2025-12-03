@@ -35,11 +35,12 @@ resource "aws_lb_target_group" "jwalb_tg" {
 
   # Launchtemplate creates this path /var/www/html/health
   health_check {
-    port               = 80
+    enabled             = true 
+    port                = 80
     protocol            = "HTTP"
     path                = "/health"
-    interval            = 10
-    timeout             = 5
+    interval            = 30  # not so aggressive
+    timeout             = 10 # not so aggressive
     healthy_threshold   = 2
     unhealthy_threshold = 3
     matcher             = "200"
