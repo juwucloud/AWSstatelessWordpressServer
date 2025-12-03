@@ -97,21 +97,20 @@ fi
 rm -rf /var/www/html/wp-content
 ln -s /mnt/efs /var/www/html/wp-content
 
-
 ########################################
-# Build or update wp-config.php
+# Force-build a clean wp-config.php
 ########################################
 
-if [ ! -f /var/www/html/wp-config.php ]; then
-    cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
-fi
+rm -f /var/www/html/wp-config.php
+cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
 
 sed -i "s/database_name_here/$DB_NAME/"       /var/www/html/wp-config.php
 sed -i "s/username_here/$DB_USER/"            /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/"        /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"                /var/www/html/wp-config.php
 
-mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<EOF
+
+mysql -h "$DB_HOST" -u "$DB_USER" -p "$DB_PASSWORD" "$DB_NAME" <<EOF
 UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='siteurl';
 UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='home';
 EOF
