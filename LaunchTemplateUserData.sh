@@ -4,6 +4,9 @@ set -euxo pipefail
 # Log alles nach /var/log/user-data.log
 exec > /var/log/user-data.log 2>&1
 
+# wait for network and services 
+sleep 30 
+
 ########################################
 # Variables
 ########################################
@@ -32,6 +35,7 @@ systemctl stop httpd
 
 mkdir -p /var/www/html
 
+sleep 15 
 ########################################
 # Mount EFS (Access Point = /wp-content)
 ########################################
@@ -50,7 +54,7 @@ SECRET=$(aws secretsmanager get-secret-value \
 
 DB_NAME=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_name'])")
 DB_USER=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_user'])")
-DB_PASSWORD=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_passwort'])")
+DB_PASSWORD=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_password'])")
 DB_HOST=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_host'])")
 
 echo "DB_NAME=$DB_NAME, DB_USER=$DB_USER, DB_HOST=$DB_HOST"
@@ -79,6 +83,24 @@ if [ ! -f /mnt/efs/.initialized ]; then
     # local.sql importieren
     echo "Downloading local.sql from S3 and importing into DB..."
     aws s3 cp "s3://$S3_BUCKET/local.sql" /tmp/local.sql
+    
+
+    # Check if database is ready before import
+    echo "Waiting for database to be ready..."
+    for i in {1..30}; do
+        if mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; then
+            echo "Database connection successful"
+            break
+        fi
+        echo "Database not ready, attempt $i/30..."
+        sleep 10
+    done
+
+    # Verify connection worked
+    mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1;" || {
+        echo "Database connection failed after 5 minutes"
+        exit 1
+    }
     mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /tmp/local.sql
 
     touch /mnt/efs/.initialized
@@ -107,6 +129,12 @@ ln -s /mnt/efs /var/www/html/wp-content
 echo "Rebuilding wp-config.php..."
 rm -f /var/www/html/wp-config.php
 cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
+# Test DB connection
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1;" || {
+    echo "Database connection test failed"
+    exit 1
+}
 
 sed -i "s/database_name_here/$DB_NAME/"    /var/www/html/wp-config.php
 sed -i "s/username_here/$DB_USER/"         /var/www/html/wp-config.php
