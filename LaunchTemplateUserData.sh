@@ -153,6 +153,22 @@ sed -i "s/username_here/$DB_USER/"         /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/"     /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"             /var/www/html/wp-config.php
 
+# Seed standard WordPress rewrite rules so pretty URLs work on first boot
+cat >/var/www/html/.htaccess <<'EOF'
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
+EOF
+chown $APACHE_USER:$APACHE_GROUP /var/www/html/.htaccess
+
+
 ########################################
 # Force SSL for WordPress DB
 ########################################
