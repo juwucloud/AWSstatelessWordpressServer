@@ -29,6 +29,18 @@ dnf update -y
 dnf install -y httpd mariadb1011-server-utils unzip wget python3 amazon-efs-utils vim
 dnf install -y php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd
 
+# Enable WordPress permalinks on Apache
+sed -i 's/^#LoadModule rewrite_module/LoadModule rewrite_module/' /etc/httpd/conf.modules.d/00-base.conf
+sed -i 's/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
+
+cat >/etc/httpd/conf.d/wordpress.conf <<'EOF'
+<Directory "/var/www/html">
+    AllowOverride All
+    Require all granted
+</Directory>
+DirectoryIndex index.php
+EOF
+
 systemctl enable httpd
 systemctl enable php-fpm
 systemctl stop httpd
