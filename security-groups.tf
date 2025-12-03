@@ -30,6 +30,16 @@ resource "aws_vpc_security_group_ingress_rule" "jwsg_web_ssh_from_bastion" {
   ip_protocol                   = "tcp"
 }
 
+# NFS to EFS
+resource "aws_vpc_security_group_ingress_rule" "jwsg_web_nfs_to_efs" {
+  security_group_id             = aws_security_group.jwsg_web.id
+  referenced_security_group_id  = aws_security_group.jwsg_efs.id
+  from_port                     = 2049
+  to_port                       = 2049
+  ip_protocol                   = "tcp"
+}
+
+
 # Outbound all IPv4
 resource "aws_vpc_security_group_egress_rule" "jwsg_web_allow_all_ipv4" {
   security_group_id = aws_security_group.jwsg_web.id
