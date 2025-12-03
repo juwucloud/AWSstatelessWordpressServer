@@ -38,27 +38,27 @@ mount -t efs -o tls,accesspoint=$EFS_AP_ID $EFS_ID:/ /mnt/efs
 # Check initialization flag
 ########################################
 
+# fetch secrets
+SECRET=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --region "$REGION" --query SecretString --output text)
+
+DB_NAME=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_name'])")
+DB_USER=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_user'])")
+DB_PASSWORD=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_password'])")
+DB_HOST=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_host'])")
+
 if [ ! -f /mnt/efs/.initialized ]; then
 
     echo "Running first-time setup"
 
     # Download and unpack site
-    aws s3 cp "s3://$BUCKET/wordpress.zip" /tmp/wp.zip
+    aws s3 cp "s3://$S3_BUCKET/wordpress.zip" /tmp/wp.zip
     unzip /tmp/wp.zip -d /tmp/wp
 
     # move wp core to html
     cp -r /tmp/wp/* /var/www/html/
 
-    # fetch secrets
-    SECRET=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --region "$REGION" --query SecretString --output text)
-
-    DB_NAME=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_name'])")
-    DB_USER=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_user'])")
-    DB_PASSWORD=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_password'])")
-    DB_HOST=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_host'])")
-
     # import DB
-    aws s3 cp "s3://$BUCKET/local.sql" /tmp/local.sql
+    aws s3 cp "s3://$S3_BUCKET/local.sql" /tmp/local.sql
     mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /tmp/local.sql
 
     # mark as complete
