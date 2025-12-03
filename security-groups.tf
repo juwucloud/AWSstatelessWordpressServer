@@ -1,5 +1,85 @@
 ########################################
-# Bastion Host SG (optional SSH)
+# WEB SERVER SECURITY GROUP
+########################################
+
+resource "aws_security_group" "jwsg_web" {
+  name        = "jwsg-web"
+  description = "Allow HTTP from ALB and SSH from Bastion"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  tags = {
+    Name = "jwsg-web"
+  }
+}
+
+# HTTP from ALB
+resource "aws_vpc_security_group_ingress_rule" "jwsg_web_http_from_alb" {
+  security_group_id             = aws_security_group.jwsg_web.id
+  referenced_security_group_id  = aws_security_group.jwsg_alb.id
+  from_port                     = 80
+  to_port                       = 80
+  ip_protocol                   = "tcp"
+}
+
+# SSH from Bastion
+resource "aws_vpc_security_group_ingress_rule" "jwsg_web_ssh_from_bastion" {
+  security_group_id             = aws_security_group.jwsg_web.id
+  referenced_security_group_id  = aws_security_group.jwsg_bastion.id
+  from_port                     = 22
+  to_port                       = 22
+  ip_protocol                   = "tcp"
+}
+
+# EFS NFS inbound from EFS SG
+resource "aws_vpc_security_group_ingress_rule" "jwsg_web_nfs_from_efs" {
+  security_group_id             = aws_security_group.jwsg_web.id
+  referenced_security_group_id  = aws_security_group.jwsg_efs.id
+  from_port                     = 2049
+  to_port                       = 2049
+  ip_protocol                   = "tcp"
+}
+
+# Outbound all IPv4
+resource "aws_vpc_security_group_egress_rule" "jwsg_web_allow_all_ipv4" {
+  security_group_id = aws_security_group.jwsg_web.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+
+########################################
+# ALB SECURITY GROUP
+########################################
+
+resource "aws_security_group" "jwsg_alb" {
+  name        = "jwsg-alb"
+  description = "Allow HTTP from internet"
+  vpc_id      = aws_vpc.jwvpc.id
+
+  tags = {
+    Name = "jwsg-alb"
+  }
+}
+
+# HTTP from internet
+resource "aws_vpc_security_group_ingress_rule" "jwsg_alb_http_anywhere" {
+  security_group_id = aws_security_group.jwsg_alb.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+}
+
+# Outbound all
+resource "aws_vpc_security_group_egress_rule" "jwsg_alb_allow_all_ipv4" {
+  security_group_id = aws_security_group.jwsg_alb.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+
+########################################
+# BASTION SECURITY GROUP
 ########################################
 
 resource "aws_security_group" "jwsg_bastion" {
@@ -7,112 +87,30 @@ resource "aws_security_group" "jwsg_bastion" {
   description = "SSH access to Bastion Host"
   vpc_id      = aws_vpc.jwvpc.id
 
-  ingress {
-    description = "Allow SSH from anywhere (adjust if needed)"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = {
     Name = "jwsg-bastion"
   }
 }
 
-########################################
-# ALB Security Group
-########################################
-
-resource "aws_security_group" "jwsg_alb" {
-  name        = "jwsg-alb"
-  description = "Allow HTTP/HTTPS from the internet"
-  vpc_id      = aws_vpc.jwvpc.id
-
-  # Allow HTTP from anywhere
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # ALB outbound to webservers
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "jwsg-alb"
-  }
+# SSH from anywhere (lab mode)
+resource "aws_vpc_security_group_ingress_rule" "jwsg_bastion_ssh_anywhere" {
+  security_group_id = aws_security_group.jwsg_bastion.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  to_port           = 22
+  ip_protocol       = "tcp"
 }
 
-########################################
-# FIX FOR ALB ↔ Webserver RETURN TRAFFIC  
-# Must be a separate resource to avoid cycles
-########################################
-
-# Allow EC2 instances to respond to ALB health checks
-resource "aws_security_group_rule" "web_to_alb_return" {
-  type                     = "ingress"
-  from_port                = 1024
-  to_port                  = 65535
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.jwsg_alb.id
-  source_security_group_id = aws_security_group.jwsg_web.id
+# Outbound all
+resource "aws_vpc_security_group_egress_rule" "jwsg_bastion_allow_all_ipv4" {
+  security_group_id = aws_security_group.jwsg_bastion.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
 }
 
-########################################
-# Webserver SG (for EC2 ASG)
-########################################
-
-resource "aws_security_group" "jwsg_web" {
-  name        = "jwsg-web"
-  description = "Allow HTTP from ALB, NFS from EFS, and SSH for testing"
-  vpc_id      = aws_vpc.jwvpc.id
-
-  # HTTP from ALB
-  ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jwsg_alb.id]
-  }
-
-  # SSH for testing only
-  ingress {
-    description = "SSH access for testing environment"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    security_groups = [aws_security_group.jwsg_bastion.id]
-  }
-
-  # Allow outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "jwsg-web"
-  }
-}
 
 ########################################
-# RDS Security Group
+# RDS SECURITY GROUP
 ########################################
 
 resource "aws_security_group" "jwsg_rds" {
@@ -120,51 +118,54 @@ resource "aws_security_group" "jwsg_rds" {
   description = "Allow MySQL from Webserver SG"
   vpc_id      = aws_vpc.jwvpc.id
 
-  ingress {
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jwsg_web.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = {
     Name = "jwsg-rds"
   }
 }
 
+# Allow MySQL from Web instances
+resource "aws_vpc_security_group_ingress_rule" "jwsg_rds_mysql_from_web" {
+  security_group_id             = aws_security_group.jwsg_rds.id
+  referenced_security_group_id  = aws_security_group.jwsg_web.id
+  from_port                     = 3306
+  to_port                       = 3306
+  ip_protocol                   = "tcp"
+}
+
+# Outbound all
+resource "aws_vpc_security_group_egress_rule" "jwsg_rds_allow_all_ipv4" {
+  security_group_id = aws_security_group.jwsg_rds.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+
 ########################################
-# EFS Security Group
+# EFS SECURITY GROUP
 ########################################
 
 resource "aws_security_group" "jwsg_efs" {
   name        = "jwsg-efs"
-  description = "Allow NFS access from Webserver SG"
+  description = "Allow NFS access from Webservers"
   vpc_id      = aws_vpc.jwvpc.id
-
-  ingress {
-    from_port       = 2049
-    to_port         = 2049
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jwsg_web.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   tags = {
     Name = "jwsg-efs"
   }
 }
 
+# NFS from Web
+resource "aws_vpc_security_group_ingress_rule" "jwsg_efs_nfs_from_web" {
+  security_group_id             = aws_security_group.jwsg_efs.id
+  referenced_security_group_id  = aws_security_group.jwsg_web.id
+  from_port                     = 2049
+  to_port                       = 2049
+  ip_protocol                   = "tcp"
+}
 
+# Outbound all
+resource "aws_vpc_security_group_egress_rule" "jwsg_efs_allow_all_ipv4" {
+  security_group_id = aws_security_group.jwsg_efs.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
