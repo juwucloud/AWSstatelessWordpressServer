@@ -57,6 +57,14 @@ if [ ! -f /mnt/efs/.initialized ]; then
     # move wp core to html
     cp -r /tmp/wp/* /var/www/html/
 
+        # Initial wp-content → copy EFS (only first boot)
+    if [ -d /var/www/html/wp-content ]; then
+        # nur wenn EFS noch leer ist
+        if [ -z "$(ls -A /mnt/efs 2>/dev/null)" ]; then
+            cp -r /var/www/html/wp-content/* /mnt/efs/
+        fi
+    fi
+
     # import DB
     aws s3 cp "s3://$S3_BUCKET/local.sql" /tmp/local.sql
     mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /tmp/local.sql
