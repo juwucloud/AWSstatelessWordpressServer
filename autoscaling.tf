@@ -54,7 +54,8 @@ resource "aws_autoscaling_group" "jwasg" {
   min_size         = 1 # 2 for production
 
   vpc_zone_identifier = [
-    aws_subnet.jwprivate_1.id # only a single subnet is used for testing
+    aws_subnet.jwprivate_1.id,
+    aws_subnet.jwprivate_2.id 
   ]
 
   target_group_arns = [
@@ -63,7 +64,7 @@ resource "aws_autoscaling_group" "jwasg" {
 
   # Crucial: allows WordPress to fully boot before ALB health checks apply
   health_check_type         = "ELB"
-  health_check_grace_period = 180
+  health_check_grace_period = 300
 
   launch_template {
     id      = aws_launch_template.jwlt.id
