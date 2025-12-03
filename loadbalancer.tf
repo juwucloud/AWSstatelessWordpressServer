@@ -65,7 +65,4 @@ resource "aws_lb_listener" "jwalb_listener" {
     target_group_arn = aws_lb_target_group.jwalb_tg.arn
   }
 
-  tags = {
-    Name = "jwalb-listener"
-  }
 }

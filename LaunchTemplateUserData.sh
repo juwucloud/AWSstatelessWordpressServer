@@ -142,6 +142,12 @@ sed -i "s/password_here/$DB_PASSWORD/"     /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"             /var/www/html/wp-config.php
 
 ########################################
+# Force SSL for WordPress DB
+########################################
+
+sed -i "/define( 'DB_HOST',/a define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" /var/www/html/wp-config.php
+
+########################################
 # Set WordPress URL in DB
 ########################################
 echo "Setting WordPress siteurl & home to $WP_URL ..."
