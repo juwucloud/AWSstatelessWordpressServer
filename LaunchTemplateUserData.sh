@@ -50,11 +50,10 @@ SECRET=$(aws secretsmanager get-secret-value \
 
 DB_NAME=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_name'])")
 DB_USER=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_user'])")
-# Achtung: Key heißt bei dir 'db_passwort'
 DB_PASSWORD=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_passwort'])")
 DB_HOST=$(echo "$SECRET" | python3 -c "import json,sys; print(json.load(sys.stdin)['db_host'])")
 
-echo "DB_NAME=${DB_NAME}, DB_USER=${DB_USER}, DB_HOST=${DB_HOST}"
+echo "DB_NAME=$DB_NAME, DB_USER=$DB_USER, DB_HOST=$DB_HOST"
 
 ########################################
 # Download & unpack WordPress from S3
