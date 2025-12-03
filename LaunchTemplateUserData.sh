@@ -11,6 +11,7 @@ EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
 SECRET_NAME="wpsecrets"
 S3_BUCKET="veganlian-artifacts"
+WP_URL="http://${alb_dns}"
 
 APACHE_USER="apache"
 APACHE_GROUP="apache"
@@ -110,6 +111,10 @@ sed -i "s/username_here/$DB_USER/"            /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/"        /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"                /var/www/html/wp-config.php
 
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<EOF
+UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='siteurl';
+UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='home';
+EOF
 
 ########################################
 # Permissions

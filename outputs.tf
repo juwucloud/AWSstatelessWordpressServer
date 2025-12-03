@@ -27,3 +27,8 @@
 #   description = "ID of the EC2 Launch Template"
 #   value       = aws_launch_template.wp_lt.id
 # }
+
+# output "alb_dns" {
+#   description = "DNS name of the ALB"
+#   value       = aws_lb.jwalb.dns_name
+# }

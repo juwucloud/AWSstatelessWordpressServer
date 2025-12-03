@@ -26,6 +26,7 @@ resource "aws_launch_template" "jwlt" {
   user_data    = base64encode(templatefile("${path.module}/LaunchTemplateUserData.sh", {
     efs_id     = aws_efs_file_system.jwefs.id
     efs_ap_id  = aws_efs_access_point.jwefs_ap.id
+    alb_dns    = aws_lb.jwalb.dns_name
   }))
 
   tag_specifications {
