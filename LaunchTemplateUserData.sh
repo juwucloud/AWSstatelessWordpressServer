@@ -160,13 +160,17 @@ cat >/var/www/html/.htaccess <<'EOF'
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %%{REQUEST_FILENAME} !-f
+RewriteCond %%{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
 </IfModule>
 # END WordPress
 EOF
+
 chown $APACHE_USER:$APACHE_GROUP /var/www/html/.htaccess
+
+# Ensure maintenance mode is cleared
+rm -f /var/www/html/.maintenance
 
 
 ########################################
