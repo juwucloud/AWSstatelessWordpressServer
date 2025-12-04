@@ -1,3 +1,5 @@
+# !! This Readme is not up to date. Will be updated soon...!!
+
 # Stateless WordPress on AWS with Terraform
 
 This repository contains my AWS stateless WordPress capstone project from the AWS Cloud Engineer bootcamp at neue fische.  
