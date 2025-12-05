@@ -1,14 +1,14 @@
-# CloudWatch Alarm for Scale Out
-resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
-  alarm_name          = "autoscaling-scale-out"
+# CloudWatch Alarm for High CPU (scale out indicator)
+resource "aws_cloudwatch_metric_alarm" "high_cpu_alarm" {
+  alarm_name          = "high-cpu-utilization"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "GroupDesiredCapacity"
-  namespace           = "AWS/AutoScaling"
-  period              = "60"
+  evaluation_periods  = "1" # scale out quickly
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "300"
   statistic           = "Average"
-  threshold           = "1"
-  alarm_description   = "Autoscaling scaled out"
+  threshold           = "50"
+  alarm_description   = "CPU utilization is above 50%"
   alarm_actions       = [aws_sns_topic.autoscaling_alerts.arn]
 
   dimensions = {
@@ -16,17 +16,17 @@ resource "aws_cloudwatch_metric_alarm" "scale_out_alarm" {
   }
 }
 
-# CloudWatch Alarm for Scale In
-resource "aws_cloudwatch_metric_alarm" "scale_in_alarm" {
-  alarm_name          = "autoscaling-scale-in"
+# CloudWatch Alarm for Low CPU (scale in indicator)
+resource "aws_cloudwatch_metric_alarm" "low_cpu_alarm" {
+  alarm_name          = "low-cpu-utilization"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "GroupDesiredCapacity"
-  namespace           = "AWS/AutoScaling"
-  period              = "60"
+  evaluation_periods  = "2" # avoid flapping
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "300"
   statistic           = "Average"
-  threshold           = "2"
-  alarm_description   = "Autoscaling scaled in"
+  threshold           = "40"  # Below target, indicates scale-in
+  alarm_description   = "CPU utilization is below 40%"
   alarm_actions       = [aws_sns_topic.autoscaling_alerts.arn]
 
   dimensions = {
