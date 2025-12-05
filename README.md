@@ -29,25 +29,25 @@ A production-ready, highly available WordPress deployment on AWS using Terraform
 
 
 AWSstatelessWordpressServer/
-├── main.tf                         # Root module configuration
-├── providers.tf                    # Terraform and AWS provider setup
-├── variables.tf                    # Input variables
-├── outputs.tf                      # Output values
-├── terraform.tfvars               # Variable values (not in repo)
-├── vpc.tf                         # VPC, subnets, routing
-├── security-groups.tf             # Security group definitions
-├── loadbalancer.tf                # Application Load Balancer
-├── autoscaling.tf                 # Launch template and ASG
-├── scaling.tf                     # Auto scaling policies
-├── rds.tf                         # RDS database instance
-├── efs.tf                         # EFS file system and mount targets
-├── secretsmanager.tf              # Secrets Manager configuration
-├── bastion.tf                     # Bastion host setup
-├── iam.tf                         # IAM roles and policies
-├── ami.tf                         # AMI data sources
-├── LaunchTemplateUserData.sh      # WordPress instance initialization
-├── BastionUserdata.sh             # Bastion host setup script
-└── LICENSE                        # MIT License
+├── main.tf                      # Root module configuration
+├── providers.tf                 # Terraform and AWS provider setup
+├── variables.tf                 # Input variables
+├── outputs.tf                   # Output values
+├── terraform.tfvars             # Variable values (not committed)
+├── vpc.tf                       # VPC, subnets, routing
+├── security-groups.tf           # Security group definitions
+├── loadbalancer.tf              # Application Load Balancer
+├── autoscaling.tf               # Launch template and ASG
+├── scaling.tf                   # Auto scaling policies
+├── rds.tf                       # RDS database instance
+├── efs.tf                       # EFS file system and mount targets
+├── secretsmanager.tf            # Secrets Manager configuration
+├── bastion.tf                   # Bastion host setup
+├── iam.tf                       # IAM roles and policies
+├── ami.tf                       # AMI data sources
+├── LaunchTemplateUserData.sh    # WordPress instance initialization
+├── BastionUserdata.sh           # Bastion host setup script
+└── LICENSE                      # MIT License
 
 ## 🚀 Quick Start
 
@@ -60,19 +60,21 @@ AWSstatelessWordpressServer/
 ### Deployment Steps
 
 1. **Clone the repository**
-   bash
+    ```bash
   git clone <repository-url>
   cd AWSstatelessWordpressServer
+    ```
 
 
 2. **Configure variables**
-   bash
+   ```bash
   cp terraform.tfvars.example terraform.tfvars
   # Edit terraform.tfvars with your values
+    ```
 
 
 3. **Set up database credentials in AWS Secrets Manager**
-   bash
+   ```bash
   aws secretsmanager create-secret \
     --name "wpsecrets" \
     --description "WordPress database credentials" \
@@ -82,13 +84,14 @@ AWSstatelessWordpressServer/
       "db_password": "your-secure-password",
       "db_host": "will-be-updated-by-terraform"
     }'
-
+    ```
 
 4. **Deploy infrastructure**
-   bash
-  terraform init
-  terraform plan
-  terraform apply
+   ```bash
+    terraform init
+    terraform plan
+    terraform apply
+    ```
 
 
 
@@ -145,7 +148,7 @@ key_name = "your-ec2-key-pair"
 
 ### Debugging Commands
 
-bash
+```bash
 # Check instance logs
 aws logs describe-log-groups --log-group-name-prefix "/aws/ec2"
 
@@ -155,6 +158,7 @@ sudo tail -f /var/log/user-data.log
 
 # Test database connectivity
 mysql -h <rds-endpoint> -u <username> -p
+```
 
 ## 🚧 Limitations & Future Enhancements
 
