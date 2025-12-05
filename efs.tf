@@ -39,6 +39,7 @@ resource "aws_efs_mount_target" "jwefs_mt_2" {
 
   # Only inbound NFS from Webserver SG
   security_groups = [aws_security_group.jwsg_efs.id]
+}
 
 ########################################
 # Access Point for /wp-content
