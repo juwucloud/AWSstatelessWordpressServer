@@ -27,7 +27,7 @@ A production-ready, highly available WordPress deployment on AWS using Terraform
 
 ## 📁 Project Structure
 
-
+```text
 AWSstatelessWordpressServer/
 ├── main.tf                      # Root module configuration
 ├── providers.tf                 # Terraform and AWS provider setup
@@ -48,6 +48,7 @@ AWSstatelessWordpressServer/
 ├── LaunchTemplateUserData.sh    # WordPress instance initialization
 ├── BastionUserdata.sh           # Bastion host setup script
 └── LICENSE                      # MIT License
+```
 
 ## 🚀 Quick Start
 
@@ -60,38 +61,38 @@ AWSstatelessWordpressServer/
 ### Deployment Steps
 
 1. **Clone the repository**
-    ```bash
-  git clone <repository-url>
-  cd AWSstatelessWordpressServer
-    ```
+```bash
+git clone <repository-url>
+cd AWSstatelessWordpressServer
+```
 
 
 2. **Configure variables**
-   ```bash
-  cp terraform.tfvars.example terraform.tfvars
-  # Edit terraform.tfvars with your values
-    ```
+```bash
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
+```
 
 
 3. **Set up database credentials in AWS Secrets Manager**
-   ```bash
-  aws secretsmanager create-secret \
-    --name "wpsecrets" \
-    --description "WordPress database credentials" \
-    --secret-string '{
-      "db_name": "wordpress",
-      "db_user": "wpuser",
-      "db_password": "your-secure-password",
-      "db_host": "will-be-updated-by-terraform"
-    }'
-    ```
+```bash
+aws secretsmanager create-secret \
+--name "wpsecrets" \
+--description "WordPress database credentials" \
+--secret-string '{
+    "db_name": "wordpress",
+    "db_user": "wpuser",
+    "db_password": "your-secure-password",
+    "db_host": "will-be-updated-by-terraform"
+}'
+```
 
 4. **Deploy infrastructure**
-   ```bash
-    terraform init
-    terraform plan
-    terraform apply
-    ```
+```bash
+terraform init
+terraform plan
+terraform apply
+```
 
 
 
@@ -103,14 +104,14 @@ AWSstatelessWordpressServer/
 
 ### Required Variables
 
-
-hcl
+```hcl
 region = "us-west-2"
 vpc_cidr = "10.0.0.0/16"
 public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
 private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
 db_secret_name = "wpsecrets"
 key_name = "your-ec2-key-pair"
+```
 
 ### Optional Customizations
 
