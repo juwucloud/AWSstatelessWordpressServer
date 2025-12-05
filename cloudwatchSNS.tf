@@ -34,13 +34,28 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu_alarm" {
   }
 }
 
+# CloudWatch Dashboard for monitoring
+resource "aws_cloudwatch_dashboard" "jwCW_dashboard" {
+  dashboard_name = "WordPress-Dashboard"
+  dashboard_body = jsonencode({
+    widgets = [{
+      type   = "metric"
+      properties = {
+        metrics = [["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", aws_autoscaling_group.jwasg.name]]
+        region  = var.region
+        title   = "ASG CPU Utilization"
+      }
+    }]
+  })
+}
+
 # SNS Topic for autoscaling notifications
 resource "aws_sns_topic" "autoscaling_alerts" {
-  name = "autoscaling-alerts"
+  name = "jw-autoscaling-alerts"
 }
 
 # SNS Subscription (replace with your email)
-resource "aws_sns_topic_subscription" "email_alert" {
+resource "aws_sns_topic_subscription" "jw_email_alert" {
   topic_arn = aws_sns_topic.autoscaling_alerts.arn
   protocol  = "email"
   endpoint  = "nanay16969@datehype.com" #temp mail for testing
