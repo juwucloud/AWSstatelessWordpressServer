@@ -100,6 +100,15 @@ terraform apply
    - Use the ALB DNS name from Terraform outputs
    - Complete WordPress setup via web interface
 
+6. **Test autoscaling**
+   - via Bastion host install stresstest on Webserver
+```bash
+sudo dnf install stress -y
+stress --cpu 2 --timeout 600
+```
+
+
+
 ## ⚙️ Configuration
 
 ### Required Variables

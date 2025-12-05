@@ -50,7 +50,7 @@ resource "aws_autoscaling_group" "jwasg" {
 
   name             = "jwasg"
   desired_capacity = 1 # 2 for production
-  max_size         = 1 # 4 for production
+  max_size         = 3 # 4 for production
   min_size         = 1 # 2 for production
   
   vpc_zone_identifier = [
