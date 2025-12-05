@@ -45,6 +45,8 @@ db_name  = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_str
 
   # Backup disabled for cost saving
   backup_retention_period = 0
+  # backup_retention_period = 7             # ENABLE for production
+  # backup_window          = "03:00-04:00"  # ENABLE for production
 
   # Performance Insights disabled
   performance_insights_enabled = false
