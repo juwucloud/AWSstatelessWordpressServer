@@ -28,7 +28,7 @@ resource "aws_db_instance" "jwrds" {
   storage_type            = "gp3"
 
   # No Multi-AZ for cost saving
-  multi_az                = true
+  multi_az                = false # disable for cost saving in testing
 
   # Database credentials (from variables)
 username = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_user"]
