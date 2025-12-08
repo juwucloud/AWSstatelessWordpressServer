@@ -52,17 +52,18 @@ resource "aws_lb_target_group" "jwalb_tg" {
 }
 
 ########################################
-# Listener (Port 80 -> Target Group)
+# HTTPS Listener (Port 443)
 ########################################
 
-resource "aws_lb_listener" "jwalb_listener" {
+resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.jwalb.arn
-  port              = "80"
-  protocol          = "HTTP"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = aws_acm_certificate_validation.ssl_cert_validation.certificate_arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.jwalb_tg.arn
   }
-
 }
