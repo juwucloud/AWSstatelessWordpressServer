@@ -3,7 +3,7 @@
 ########################################
 
 data "aws_secretsmanager_secret" "db_secret" {
-  name = var.db_secret_name  # "wpsecrets"
+  name = var.db_secret_name  # "wpsecret"
 }
 
 ########################################

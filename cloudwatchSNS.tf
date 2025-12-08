@@ -58,6 +58,6 @@ resource "aws_sns_topic" "autoscaling_alerts" {
 resource "aws_sns_topic_subscription" "jw_email_alert" {
   topic_arn = aws_sns_topic.autoscaling_alerts.arn
   protocol  = "email"
-  endpoint  = "nanay16969@datehype.com" #temp mail for testing
+  endpoint  = "patako7664@lawior.com" #temp mail for testing
 }
 

@@ -13,7 +13,7 @@ sleep 30
 REGION="us-west-2"
 EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
-SECRET_NAME="wpsecrets"
+SECRET_NAME="wpsecret"
 S3_BUCKET="veganlian-artifacts"
 WP_URL="http://${alb_dns}"
 
@@ -87,7 +87,7 @@ unzip -oq /tmp/wp.zip -d /tmp/wp
 if [ ! -f /mnt/efs/.initialized ]; then
     echo "INITIAL SETUP START"
 
-    # Sicherstellen, dass wp-content im EFS liegt (Access Point zeigt bereits auf /wp-content)
+    # be sure wp-content is empty
     mkdir -p /mnt/efs
     rm -rf /mnt/efs/*
     cp -R /tmp/wp/wp-content/* /mnt/efs/
@@ -120,7 +120,7 @@ if [ ! -f /mnt/efs/.initialized ]; then
 fi
 
 ########################################
-# Deploy WordPress core (ohne wp-content)
+# Deploy WordPress core (without wp-content)
 ########################################
 echo "Deploying WordPress core files..."
 rm -rf /var/www/html/*

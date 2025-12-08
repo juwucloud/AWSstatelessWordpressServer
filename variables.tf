@@ -28,3 +28,9 @@ variable "key_name" {
   type        = string
   description = "Key pair name for SSH access"
 }
+
+
+variable "domain_name" {
+  type        = string
+  description = "Domain name for the WordPress site"
+}
