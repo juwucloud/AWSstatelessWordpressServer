@@ -67,3 +67,24 @@ resource "aws_lb_listener" "https_listener" {
     target_group_arn = aws_lb_target_group.jwalb_tg.arn
   }
 }
+
+
+########################################
+# HTTP Listener (Port 80 -> Redirect to HTTPS)
+########################################
+
+resource "aws_lb_listener" "http_redirect" {
+  load_balancer_arn = aws_lb.jwalb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
