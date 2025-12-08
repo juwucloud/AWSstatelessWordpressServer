@@ -21,12 +21,14 @@ resource "aws_vpc_security_group_ingress_rule" "jwsg_web_http_from_alb" {
   ip_protocol                   = "tcp"
 }
 
+# HTTPS from ALB
 resource "aws_vpc_security_group_ingress_rule" "jwsg_web_https_from_alb" {
   security_group_id             = aws_security_group.jwsg_web.id
   referenced_security_group_id  = aws_security_group.jwsg_alb.id
   from_port                     = 443
   to_port                       = 443
   ip_protocol                   = "tcp"
+}
 
 # SSH from Bastion
 resource "aws_vpc_security_group_ingress_rule" "jwsg_web_ssh_from_bastion" {
@@ -75,6 +77,14 @@ resource "aws_vpc_security_group_ingress_rule" "jwsg_alb_http_anywhere" {
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 80
   to_port           = 80
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "jwsg_alb_https_anywhere" {
+  security_group_id = aws_security_group.jwsg_alb.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
   ip_protocol       = "tcp"
 }
 
