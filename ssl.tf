@@ -1,3 +1,11 @@
+# Route53 Hosted Zone
+resource "aws_route53_zone" "main" {
+  name = var.domain_name
+  tags = {
+    Name = "veganlian-zone"
+  }
+}
+
 resource "aws_acm_certificate" "ssl_cert" {
   domain_name       = var.domain_name
   validation_method = "DNS"

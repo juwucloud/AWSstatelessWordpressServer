@@ -15,7 +15,7 @@ EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
 SECRET_NAME="wpsecret"
 S3_BUCKET="veganlian-artifacts"
-WP_URL="http://${alb_dns}"
+WP_URL="http://${domain_name}"
 
 APACHE_USER="apache"
 APACHE_GROUP="apache"
