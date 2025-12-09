@@ -15,7 +15,7 @@ EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
 SECRET_NAME="wpsecret"
 S3_BUCKET="veganlian-artifacts"
-WP_URL="http://${domain_name}"
+WP_URL="https://${domain_name}"
 
 APACHE_USER="apache"
 APACHE_GROUP="apache"
@@ -158,6 +158,13 @@ cat >>/var/www/html/wp-config.php <<'EOF'
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
+EOF
+
+# Force WordPress URLs for HTTPS asset loading
+cat >>/var/www/html/wp-config.php <<'EOF'
+define('WP_HOME', 'https://veganlian.de');
+define('WP_SITEURL', 'https://veganlian.de');
+define('WP_CONTENT_URL', 'https://veganlian.de/wp-content');
 EOF
 
 # Seed standard WordPress rewrite rules so pretty URLs work on first boot
