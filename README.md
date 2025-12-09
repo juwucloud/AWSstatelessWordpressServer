@@ -9,7 +9,7 @@ A production-ready, highly available WordPress deployment on AWS using Terraform
 ### Key Components
 
 - **Multi-AZ VPC** with public and private subnets across two availability zones
-- **Application Load Balancer** for high availability
+- **Application Load Balancer** with HTTPS and HTTP→HTTPS redirect
 - **Auto Scaling Group** with EC2 instances in private subnets
 - **Amazon EFS** for shared WordPress content storage
 - **Amazon RDS** for managed MySQL database
@@ -36,7 +36,7 @@ AWSstatelessWordpressServer/
 ├── terraform.tfvars             # Variable values (not committed)
 ├── vpc.tf                       # VPC, subnets, routing
 ├── security-groups.tf           # Security group definitions
-├── loadbalancer.tf              # Application Load Balancer
+├── loadbalancer.tf              # Application Load Balancer with HTTPS
 ├── autoscaling.tf               # Launch template and ASG
 ├── scaling.tf                   # Auto scaling policies
 ├── rds.tf                       # RDS database instance
@@ -58,6 +58,29 @@ AWSstatelessWordpressServer/
 - Terraform >= 1.0 installed
 - SSH key pair created in your target AWS region
 
+### Required AWS Resources
+
+Before deployment, set up these 3 resources:
+
+1. **S3 Bucket:** `veganlian-artifacts`
+   - Upload `wordpress.zip` (WordPress installation files)
+   - Upload `local.sql` (database dump)
+
+2. **Secrets Manager Secret:** `wpsecrets`
+   ```bash
+   aws secretsmanager create-secret \
+   --name "wpsecrets" \
+   --description "WordPress database credentials" \
+   --secret-string '{
+       "db_name": "wordpress",
+       "db_user": "wpuser", 
+       "db_password": "your-secure-password",
+       "db_host": "will-be-updated-by-terraform"
+   }'
+   ```
+
+3. **Email Address:** For SNS notifications (update in `cloudwatchSNS.tf`)
+
 ### Deployment Steps
 
 1. **Clone the repository**
@@ -66,48 +89,29 @@ git clone <repository-url>
 cd AWSstatelessWordpressServer
 ```
 
-
 2. **Configure variables**
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars with your values
 ```
 
-
-3. **Set up database credentials in AWS Secrets Manager**
-```bash
-aws secretsmanager create-secret \
---name "wpsecrets" \
---description "WordPress database credentials" \
---secret-string '{
-    "db_name": "wordpress",
-    "db_user": "wpuser",
-    "db_password": "your-secure-password",
-    "db_host": "will-be-updated-by-terraform"
-}'
-```
-
-4. **Deploy infrastructure**
+3. **Deploy infrastructure**
 ```bash
 terraform init
 terraform plan
 terraform apply
 ```
 
-
-
-5. **Access your WordPress site**
+4. **Access your WordPress site**
    - Use the ALB DNS name from Terraform outputs
-   - Complete WordPress setup via web interface
+   - HTTPS will be available immediately (browser certificate warning expected)
+   - HTTP automatically redirects to HTTPS
 
-6. **Test autoscaling**
-   - via Bastion host install stresstest on Webserver
+5. **Test autoscaling**
+   - Test load balancing and auto-scaling via ALB:
 ```bash
-sudo dnf install stress -y
-stress --cpu 2 --timeout 600
+ab -n 1000 -c 10 https://$(terraform output -raw alb_dns_name)/
 ```
-
-
 
 ## ⚙️ Configuration
 
@@ -128,33 +132,34 @@ key_name = "your-ec2-key-pair"
 - EFS performance mode and throughput
 - Auto scaling parameters
 - Security group rules
+- RDS Multi-AZ (set `multi_az = true` for production)
 
 ## 🔒 Security Features
 
 - **Network Isolation**: Web servers in private subnets
+- **HTTPS Encryption**: ALB terminates SSL with default certificate
 - **Encrypted Storage**: EFS and RDS encryption at rest
 - **Secrets Management**: Database credentials in AWS Secrets Manager
 - **Security Groups**: Least privilege access controls
-- **SSL/TLS**: Encrypted data in transit
 
 ## 🔧 Troubleshooting
 
 ### Common Issues
 
-1. **Database Connection Failures**
+1. **HTTPS Certificate Warning**
+   - Expected behavior with ALB default certificate
+   - Click "Advanced" → "Proceed" in browser
+   - For production, consider custom domain with ACM certificate
+
+2. **Database Connection Failures**
    - Verify Secrets Manager configuration
    - Check security group rules
    - Ensure RDS is in available state
 
-2. **EFS Mount Issues**
+3. **EFS Mount Issues**
    - Confirm mount targets in correct subnets
    - Verify security group allows NFS traffic (port 2049)
    - Check EFS file system state
-
-3. **Load Balancer Health Checks**
-   - Verify `/health` endpoint responds
-   - Check security group allows ALB traffic
-   - Review user data script logs in `/var/log/user-data.log`
 
 ### Debugging Commands
 
@@ -170,20 +175,42 @@ sudo tail -f /var/log/user-data.log
 mysql -h <rds-endpoint> -u <username> -p
 ```
 
-## 🚧 Limitations & Future Enhancements
+## 💰 Cost Optimization
 
-### Current Limitations
-- Single-zone EFS for cost optimization
-- Basic SSL configuration
-- Limited monitoring and alerting
+### Current Architecture Costs (~$75-85/month):
+- **Compute**: EC2 instances (t2.micro) - ~$17/month
+- **Database**: RDS (db.t3.micro) - ~$15/month  
+- **Networking**: ALB + NAT Gateway - ~$67/month
+- **Storage**: EFS + S3 - ~$3/month
 
-### Planned Improvements
-- [ ] Multi-AZ EFS deployment
-- [ ] AWS Certificate Manager integration
-- [ ] Enhanced CloudWatch dashboards
-- [ ] AWS WAF integration
-- [ ] Container-based deployment option
-- [ ] CI/CD pipeline integration
+### Cost Savings Options:
+- **Reserved Instances**: 30-60% savings on compute
+- **Single-AZ RDS**: ~$15/month savings (reduce availability)
+- **Scheduled Scaling**: Scale down during off-hours
+- **Right-sizing**: Monitor and adjust instance sizes
+
+## 🚧 Future Enhancements
+
+### Enhanced Security & Compliance
+- **AWS WAF (Web Application Firewall)** - Protect against SQL injection, XSS attacks
+- **VPC Flow Logs** - Network traffic monitoring and security analysis
+- **Secrets Manager rotation** - Automatic database password updates
+
+### Performance & Scalability
+- **Amazon CloudFront CDN** - Global content delivery for faster load times
+- **RDS Multi-AZ deployment** - Database high availability and failover
+- **ElastiCache integration** - Redis/Memcached for WordPress object caching
+
+### DevOps & Automation
+- **CI/CD Pipeline with CodePipeline** - Automated WordPress updates via S3
+- **Blue/Green deployments** - Zero-downtime application updates
+- **Infrastructure testing** - Automated Terraform validation and testing
+
+### Monitoring & Operations
+- **Enhanced CloudWatch dashboards** - Real-time metrics visualization
+- **Centralized logging with CloudWatch Logs** - Application and infrastructure logs
+- **Automated backup strategies** - Scheduled RDS and EFS backups
+- **Cost monitoring and optimization** - Track and optimize AWS spending
 
 ## 📝 License
 
@@ -191,4 +218,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Note**: This project is designed for learning and demonstration purposes. For production use, additional security hardening and monitoring should be implemented based on your specific requirements.
+**Note**: This project uses ALB default SSL certificates for HTTPS. For production deployments with custom domains, consider implementing Route53 DNS management and ACM certificates for trusted SSL.
