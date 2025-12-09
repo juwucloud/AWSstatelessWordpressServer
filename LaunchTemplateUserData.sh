@@ -153,18 +153,23 @@ sed -i "s/username_here/$DB_USER/"         /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/"     /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"             /var/www/html/wp-config.php
 
-#fix HTTPS behind load balancer
-cat >>/var/www/html/wp-config.php <<'EOF'
+# Force HTTPS everywhere in WordPress
+cat >> /var/www/html/wp-config.php << 'EOF'
+
+# Fix HTTPS behind ALB
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
-EOF
 
-# Force WordPress URLs for HTTPS asset loading
-cat >>/var/www/html/wp-config.php <<'EOF'
+# Force all WordPress URLs to HTTPS
 define('WP_HOME', 'https://veganlian.de');
 define('WP_SITEURL', 'https://veganlian.de');
 define('WP_CONTENT_URL', 'https://veganlian.de/wp-content');
+define('FORCE_SSL_ADMIN', true);
+
+# Force HTTPS for all content
+$_SERVER['HTTPS'] = 'on';
+$_SERVER['SERVER_PORT'] = 443;
 EOF
 
 # Seed standard WordPress rewrite rules so pretty URLs work on first boot
