@@ -32,13 +32,3 @@ output "alb_dns" {
   description = "DNS name of the ALB"
   value       = aws_lb.jwalb.dns_name
 }
-
-output "route53_nameservers" {
-  description = "Route53 nameservers to configure at your domain registrar"
-  value       = aws_route53_zone.main.name_servers
-}
-
-output "wordpress_url" {
-  description = "WordPress site URL"
-  value       = "https://${var.domain_name}"
-}
