@@ -15,7 +15,7 @@ EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
 SECRET_NAME="wpsecret"
 S3_BUCKET="veganlian-artifacts"
-WP_URL="https://${domain_name}"
+WP_URL="https://${alb_dns}"
 
 APACHE_USER="apache"
 APACHE_GROUP="apache"
@@ -171,6 +171,12 @@ define('FORCE_SSL_ADMIN', true);
 $_SERVER['HTTPS'] = 'on';
 $_SERVER['SERVER_PORT'] = 443;
 EOF
+
+# Ensure all WordPress files use HTTPS URLs
+find /var/www/html -name "*.php" -type f -exec sed -i 's|http://veganlian.de|https://veganlian.de|g' {} \;
+
+# Clear any cached files
+rm -rf /var/www/html/wp-content/cache/*
 
 # Seed standard WordPress rewrite rules so pretty URLs work on first boot
 cat >/var/www/html/.htaccess <<'EOF'
