@@ -65,7 +65,7 @@ resource "aws_lb_listener" "https_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.jwalb_tg.arn
   }
-
+}
 
 ########################################
 # HTTP Listener (Port 80 -> Redirect to HTTPS)
