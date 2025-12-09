@@ -30,7 +30,3 @@ variable "key_name" {
 }
 
 
-variable "domain_name" {
-  type        = string
-  description = "Domain name for the WordPress site"
-}
