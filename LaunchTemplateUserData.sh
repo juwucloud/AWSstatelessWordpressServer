@@ -197,10 +197,13 @@ sed -i "/define( 'DB_HOST',/a define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );
 ########################################
 # Set WordPress URL in DB
 ########################################
-echo "Setting WordPress siteurl & home to $WP_URL ..."
+echo "Setting WordPress siteurl & home to $WP_URL and fixing all HTTP references..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<EOF
 UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='siteurl';
 UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='home';
+UPDATE wp_options SET option_value = REPLACE(option_value, 'http://veganlian.de', 'https://veganlian.de');
+UPDATE wp_posts SET post_content = REPLACE(post_content, 'http://veganlian.de', 'https://veganlian.de');
+UPDATE wp_postmeta SET meta_value = REPLACE(meta_value, 'http://veganlian.de', 'https://veganlian.de');
 EOF
 
 ########################################
