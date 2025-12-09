@@ -153,8 +153,16 @@ sed -i "s/username_here/$DB_USER/"         /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/"     /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"             /var/www/html/wp-config.php
 
+#fix HTTPS behind load balancer
+cat >>/var/www/html/wp-config.php <<'EOF'
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+EOF
+
 # Seed standard WordPress rewrite rules so pretty URLs work on first boot
 cat >/var/www/html/.htaccess <<'EOF'
+
 # BEGIN WordPress
 <IfModule mod_rewrite.c>
 RewriteEngine On

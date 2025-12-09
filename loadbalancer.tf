@@ -68,6 +68,11 @@ resource "aws_lb_listener" "https_listener" {
   }
 }
 
+
+########################################
+# HTTP Listener (Port 80 -> Redirect to HTTPS)
+########################################
+
 resource "aws_lb_listener" "http_redirect" {
   load_balancer_arn = aws_lb.jwalb.arn
   port              = "80"
