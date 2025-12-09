@@ -74,7 +74,7 @@ resource "aws_autoscaling_group" "jwasg" {
   # Make sure ALB listener exists first
   depends_on = [
     aws_lb_listener.https_listener,
-    aws_lb_listener.http_listener
+    aws_lb_listener.http_redirect
   ]
 
   # Propagate Name tag to all instances
