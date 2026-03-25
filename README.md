@@ -69,10 +69,10 @@ Before deployment, set up these 3 resources:
 2. **Secrets Manager Secret:** `wpsecrets`
    ```bash
    aws secretsmanager create-secret \
-   --name "wpsecrets" \
+   --name "local" \
    --description "WordPress database credentials" \
    --secret-string '{
-       "db_name": "wordpress",
+       "db_name": "local",
        "db_user": "wpuser", 
        "db_password": "your-secure-password",
        "db_host": "will-be-updated-by-terraform"
