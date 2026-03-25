@@ -8,9 +8,9 @@ resource "aws_iam_role" "jw_ec2_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 
@@ -30,7 +30,7 @@ resource "aws_iam_policy" "jw_ec2_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "SecretsManagerAccess"         # Access to Secrets Manager
+        Sid    = "SecretsManagerAccess" # Access to Secrets Manager
         Effect = "Allow"
         Action = [
           "secretsmanager:GetSecretValue"
@@ -38,7 +38,7 @@ resource "aws_iam_policy" "jw_ec2_policy" {
         Resource = "*"
       },
       {
-        Sid    = "EFSAccess"                    # Access to EFS
+        Sid    = "EFSAccess" # Access to EFS
         Effect = "Allow"
         Action = [
           "elasticfilesystem:ClientMount",

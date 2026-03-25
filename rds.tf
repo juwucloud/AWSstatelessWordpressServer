@@ -3,7 +3,7 @@
 ########################################
 
 resource "aws_db_subnet_group" "jwrds_sng" {
-  name       = "jwrds-sng"
+  name = "jwrds-sng"
   subnet_ids = [
     aws_subnet.jwprivate_1.id,
     aws_subnet.jwprivate_2.id
@@ -19,29 +19,29 @@ resource "aws_db_subnet_group" "jwrds_sng" {
 ########################################
 
 resource "aws_db_instance" "jwrds" {
-  identifier              = "jwrds"
-  engine                  = "mariadb"
-  engine_version          = "11.8.5"   # latest version
-  instance_class          = "db.t3.micro"
+  identifier     = "jwrds"
+  engine         = "mariadb"
+  engine_version = "11.8.5" # latest version
+  instance_class = "db.t3.micro"
 
-  allocated_storage       = 20       # Minimum and cheap
-  storage_type            = "gp3"
+  allocated_storage = 20 # Minimum and cheap
+  storage_type      = "gp3"
 
   # No Multi-AZ for cost saving
-  multi_az                = true # disable for cost saving in testing
+  multi_az = false # activate for production
 
   # Database credentials (from variables)
-username = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_user"]
-password = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_password"]
-db_name  = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_name"]
+  username = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_user"]
+  password = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_password"]
+  db_name  = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)["db_name"]
 
 
   # Security groups
-  vpc_security_group_ids  = [aws_security_group.jwsg_rds.id]
+  vpc_security_group_ids = [aws_security_group.jwsg_rds.id]
 
   # Private subnets only
-  db_subnet_group_name    = aws_db_subnet_group.jwrds_sng.name
-  publicly_accessible     = false
+  db_subnet_group_name = aws_db_subnet_group.jwrds_sng.name
+  publicly_accessible  = false
 
   # Backup disabled for cost saving
   backup_retention_period = 0

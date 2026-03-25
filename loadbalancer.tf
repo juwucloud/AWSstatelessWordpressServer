@@ -35,11 +35,11 @@ resource "aws_lb_target_group" "jwalb_tg" {
 
   # Launchtemplate creates this path /var/www/html/health
   health_check {
-    enabled             = true 
+    enabled             = true
     port                = 80
     protocol            = "HTTP"
     path                = "/health"
-    interval            = 30  # not so aggressive
+    interval            = 30 # not so aggressive
     timeout             = 10 # not so aggressive
     healthy_threshold   = 2
     unhealthy_threshold = 3
@@ -51,38 +51,17 @@ resource "aws_lb_target_group" "jwalb_tg" {
   }
 }
 
-########################################
-# HTTPS Listener (Port 443)
-########################################
+# ########################################
+# # HTTP Listener (Port 80)
+# ########################################
 
-resource "aws_lb_listener" "https_listener" {
-  load_balancer_arn = aws_lb.jwalb.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.jwalb_tg.arn
-  }
-}
-
-########################################
-# HTTP Listener (Port 80 -> Redirect to HTTPS)
-########################################
-
-resource "aws_lb_listener" "http_redirect" {
+resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = aws_lb.jwalb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.jwalb_tg.arn
   }
 }

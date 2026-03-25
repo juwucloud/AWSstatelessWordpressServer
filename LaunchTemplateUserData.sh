@@ -13,12 +13,15 @@ sleep 30
 REGION="us-west-2"
 EFS_ID="${efs_id}"
 EFS_AP_ID="${efs_ap_id}"
-SECRET_NAME="wpsecret"
+SECRET_NAME="wpsecrets"
 S3_BUCKET="veganlian-artifacts"
-WP_URL="https://${alb_dns}"
+WP_URL="http://${alb_dns}"
 
 APACHE_USER="apache"
 APACHE_GROUP="apache"
+APACHE_UID=48
+APACHE_GID=48
+
 
 echo "WP_URL is set to $WP_URL"
 
@@ -28,6 +31,12 @@ echo "WP_URL is set to $WP_URL"
 dnf update -y
 dnf install -y httpd mariadb1011-server-utils unzip wget python3 amazon-efs-utils vim
 dnf install -y php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd
+dnf upgrade -y
+
+# Install WP CLI
+curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+chmod +x wp-cli.phar
+mv wp-cli.phar /usr/local/bin/wp
 
 # Enable WordPress permalinks on Apache
 sed -i 's/^#LoadModule rewrite_module/LoadModule rewrite_module/' /etc/httpd/conf.modules.d/00-base.conf
@@ -153,13 +162,14 @@ sed -i "s/username_here/$DB_USER/"         /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/"     /var/www/html/wp-config.php
 sed -i "s/localhost/$DB_HOST/"             /var/www/html/wp-config.php
 
-# Fix HTTPS behind load balancer
+# fix HTTPS behind load balancer
 cat >> /var/www/html/wp-config.php << 'EOF'
 
 # Fix HTTPS behind ALB
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
+
 EOF
 
 # Seed standard WordPress rewrite rules so pretty URLs work on first boot
@@ -170,8 +180,8 @@ cat >/var/www/html/.htaccess <<'EOF'
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.php$ - [L]
-RewriteCond %%{REQUEST_FILENAME} !-f
-RewriteCond %%{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
 </IfModule>
 # END WordPress
@@ -182,22 +192,33 @@ chown $APACHE_USER:$APACHE_GROUP /var/www/html/.htaccess
 # Ensure maintenance mode is cleared
 rm -f /var/www/html/.maintenance
 
-
 ########################################
 # Force SSL for WordPress DB
 ########################################
 
 sed -i "/define( 'DB_HOST',/a define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );" /var/www/html/wp-config.php
 
+
 ########################################
 # Set WordPress URL in DB
 ########################################
-echo "Setting WordPress siteurl & home to $WP_URL and fixing all HTTP references..."
-mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<EOF
-UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='siteurl';
-UPDATE wp_options SET option_value='$WP_URL' WHERE option_name='home';
-
+if mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -D "$DB_NAME" \
+    -e "SHOW TABLES LIKE 'wp_options';" | grep -q wp_options; then
+  echo "wp_options found, updating URLs"
+  mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<EOF
+UPDATE wp_options SET option_value='$WP_URL' WHERE option_name IN ('siteurl','home');
 EOF
+else
+  echo "wp_options missing, invoking WP core install"
+  wp core install \
+    --path=/var/www/html \
+    --url="$WP_URL" \
+    --title="WordPress" \
+    --admin_user="admin" \
+    --admin_password="ChangeMe123!" \
+    --admin_email="admin@example.com" \
+    --skip-email
+fi
 
 ########################################
 # Permissions

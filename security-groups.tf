@@ -14,38 +14,38 @@ resource "aws_security_group" "jwsg_web" {
 
 # HTTP from ALB
 resource "aws_vpc_security_group_ingress_rule" "jwsg_web_http_from_alb" {
-  security_group_id             = aws_security_group.jwsg_web.id
-  referenced_security_group_id  = aws_security_group.jwsg_alb.id
-  from_port                     = 80
-  to_port                       = 80
-  ip_protocol                   = "tcp"
+  security_group_id            = aws_security_group.jwsg_web.id
+  referenced_security_group_id = aws_security_group.jwsg_alb.id
+  from_port                    = 80
+  to_port                      = 80
+  ip_protocol                  = "tcp"
 }
 
 # HTTPS from ALB
 resource "aws_vpc_security_group_ingress_rule" "jwsg_web_https_from_alb" {
-  security_group_id             = aws_security_group.jwsg_web.id
-  referenced_security_group_id  = aws_security_group.jwsg_alb.id
-  from_port                     = 443
-  to_port                       = 443
-  ip_protocol                   = "tcp"
+  security_group_id            = aws_security_group.jwsg_web.id
+  referenced_security_group_id = aws_security_group.jwsg_alb.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
 }
 
 # SSH from Bastion
 resource "aws_vpc_security_group_ingress_rule" "jwsg_web_ssh_from_bastion" {
-  security_group_id             = aws_security_group.jwsg_web.id
-  referenced_security_group_id  = aws_security_group.jwsg_bastion.id
-  from_port                     = 22
-  to_port                       = 22
-  ip_protocol                   = "tcp"
+  security_group_id            = aws_security_group.jwsg_web.id
+  referenced_security_group_id = aws_security_group.jwsg_bastion.id
+  from_port                    = 22
+  to_port                      = 22
+  ip_protocol                  = "tcp"
 }
 
 # NFS to EFS
 resource "aws_vpc_security_group_ingress_rule" "jwsg_web_nfs_to_efs" {
-  security_group_id             = aws_security_group.jwsg_web.id
-  referenced_security_group_id  = aws_security_group.jwsg_efs.id
-  from_port                     = 2049
-  to_port                       = 2049
-  ip_protocol                   = "tcp"
+  security_group_id            = aws_security_group.jwsg_web.id
+  referenced_security_group_id = aws_security_group.jwsg_efs.id
+  from_port                    = 2049
+  to_port                      = 2049
+  ip_protocol                  = "tcp"
 }
 
 
@@ -143,11 +143,11 @@ resource "aws_security_group" "jwsg_rds" {
 
 # Allow MySQL from Web instances
 resource "aws_vpc_security_group_ingress_rule" "jwsg_rds_mysql_from_web" {
-  security_group_id             = aws_security_group.jwsg_rds.id
-  referenced_security_group_id  = aws_security_group.jwsg_web.id
-  from_port                     = 3306
-  to_port                       = 3306
-  ip_protocol                   = "tcp"
+  security_group_id            = aws_security_group.jwsg_rds.id
+  referenced_security_group_id = aws_security_group.jwsg_web.id
+  from_port                    = 3306
+  to_port                      = 3306
+  ip_protocol                  = "tcp"
 }
 
 # Outbound all
@@ -174,11 +174,11 @@ resource "aws_security_group" "jwsg_efs" {
 
 # NFS from Web
 resource "aws_vpc_security_group_ingress_rule" "jwsg_efs_nfs_from_web" {
-  security_group_id             = aws_security_group.jwsg_efs.id
-  referenced_security_group_id  = aws_security_group.jwsg_web.id
-  from_port                     = 2049
-  to_port                       = 2049
-  ip_protocol                   = "tcp"
+  security_group_id            = aws_security_group.jwsg_efs.id
+  referenced_security_group_id = aws_security_group.jwsg_web.id
+  from_port                    = 2049
+  to_port                      = 2049
+  ip_protocol                  = "tcp"
 }
 
 # Outbound all

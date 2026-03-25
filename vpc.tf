@@ -83,8 +83,8 @@ resource "aws_subnet" "jwprivate_2" {
 ########################################
 
 resource "aws_eip" "jwnat_eip" {
-  depends_on = [ aws_internet_gateway.jwigw ]
-  domain = "vpc"
+  depends_on = [aws_internet_gateway.jwigw]
+  domain     = "vpc"
 
   tags = {
     Name = "jwnat-eip"
@@ -93,7 +93,7 @@ resource "aws_eip" "jwnat_eip" {
 
 resource "aws_nat_gateway" "jwnat" {
   allocation_id = aws_eip.jwnat_eip.id
-  subnet_id     = aws_subnet.jwpublic_1.id   # Launch NAT in us-west-2a
+  subnet_id     = aws_subnet.jwpublic_1.id # Launch NAT in us-west-2a
 
   tags = {
     Name = "jwnat"

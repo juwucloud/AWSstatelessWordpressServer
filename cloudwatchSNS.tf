@@ -25,7 +25,7 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu_alarm" {
   namespace           = "AWS/EC2"
   period              = "300"
   statistic           = "Average"
-  threshold           = "40"  # Below target, indicates scale-in
+  threshold           = "40" # Below target, indicates scale-in
   alarm_description   = "CPU utilization is below 40%"
   alarm_actions       = [aws_sns_topic.autoscaling_alerts.arn]
 
@@ -39,7 +39,7 @@ resource "aws_cloudwatch_dashboard" "jwCW_dashboard" {
   dashboard_name = "WordPress-Dashboard"
   dashboard_body = jsonencode({
     widgets = [{
-      type   = "metric"
+      type = "metric"
       properties = {
         metrics = [["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", aws_autoscaling_group.jwasg.name]]
         region  = var.region

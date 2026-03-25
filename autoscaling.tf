@@ -3,7 +3,7 @@
 ########################################
 
 resource "aws_launch_template" "jwlt" {
-  depends_on = [ 
+  depends_on = [
     aws_efs_file_system.jwefs,
     aws_secretsmanager_secret_version.db_creds_update,
     aws_db_instance.jwrds
@@ -23,10 +23,10 @@ resource "aws_launch_template" "jwlt" {
   }
 
   # Load User Data from file (base64 required by AWS)
-  user_data    = base64encode(templatefile("${path.module}/LaunchTemplateUserData.sh", {
-    efs_id     = aws_efs_file_system.jwefs.id
-    efs_ap_id  = aws_efs_access_point.jwefs_ap.id
-    alb_dns    = aws_lb.jwalb.dns_name
+  user_data = base64encode(templatefile("${path.module}/LaunchTemplateUserData.sh", {
+    efs_id    = aws_efs_file_system.jwefs.id
+    efs_ap_id = aws_efs_access_point.jwefs_ap.id
+    alb_dns   = aws_lb.jwalb.dns_name
   }))
 
   tag_specifications {
@@ -52,7 +52,7 @@ resource "aws_autoscaling_group" "jwasg" {
   desired_capacity = 1 # 2 for production
   max_size         = 3 # 4 for production
   min_size         = 1 # 2 for production
-  
+
   vpc_zone_identifier = [
     aws_subnet.jwprivate_1.id,
     aws_subnet.jwprivate_2.id
@@ -73,8 +73,7 @@ resource "aws_autoscaling_group" "jwasg" {
 
   # Make sure ALB listener exists first
   depends_on = [
-    aws_lb_listener.https_listener,
-    aws_lb_listener.http_redirect
+    aws_lb_listener.http_listener
   ]
 
   # Propagate Name tag to all instances
