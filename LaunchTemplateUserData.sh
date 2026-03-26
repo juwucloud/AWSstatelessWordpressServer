@@ -33,11 +33,6 @@ dnf install -y httpd mariadb1011-server-utils unzip wget python3 amazon-efs-util
 dnf install -y php php-mysqlnd php-fpm php-json php-mbstring php-xml php-gd
 dnf upgrade -y
 
-# Install WP CLI
-curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-chmod +x wp-cli.phar
-mv wp-cli.phar /usr/local/bin/wp
-
 # Enable WordPress permalinks on Apache
 sed -i 's/^#LoadModule rewrite_module/LoadModule rewrite_module/' /etc/httpd/conf.modules.d/00-base.conf
 sed -i 's/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
@@ -180,8 +175,8 @@ cat >/var/www/html/.htaccess <<'EOF'
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %%{REQUEST_FILENAME} !-f
+RewriteCond %%{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
 </IfModule>
 # END WordPress
@@ -211,7 +206,6 @@ EOF
 else
   echo "wp_options missing, invoking WP core install"
   wp core install \
-    --path=/var/www/html \
     --url="$WP_URL" \
     --title="WordPress" \
     --admin_user="admin" \
